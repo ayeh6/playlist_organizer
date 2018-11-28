@@ -42,7 +42,7 @@ public class Playlist_Organizer
 	{	
 		boolean fail = false;
 		String input_songname, input_artistname, input_albumname, input_genrename, input_language;
-		int u_userID = 0;
+		int s_songID=0,ar_artID=0,al_albID=0,g_genID=0;
 		Scanner input = new Scanner(System.in);
 
 		System.out.print("Song: ");
@@ -60,32 +60,71 @@ public class Playlist_Organizer
 		System.out.print("Language ");
 		input_language = input.nextLine();
 
-		// try
-		// {
-		// 		Statement statement = connection.createStatement();
-		// 		statement.setQueryTimeout(30);
-		// 		ResultSet rs = statement.executeQuery("select u_userID from users where u_username like '"+input_username+"'");
-		// 		while(rs.next())
-		// 		{
-		// 			u_userID = rs.getInt("u_userID");
-		// 		}
-		// 		if(u_userID != 0)
-		// 		{
-		// 			System.out.println("Username Already Exists");
-		// 			fail = true;
-		// 		}
-		// 		else
-		// 		{
-		// 			statement.executeUpdate("insert into users(u_username, u_fullname, u_age, u_country, u_admin, u_password) values ("+u_username+",'"+u_fullname+"',"+u_age+","+u_country+",'"+u_admin+"',"+u_password+")");
-		// 		}
-		// 	}
-		// 	catch(SQLException e)
-		// 	{
-		// 		System.err.println(e.getMessage());
-		// 	}
+		try
+		{
+				Statement statement = connection.createStatement();
+				statement.setQueryTimeout(30);
+				ResultSet rs;
+
+				// check if genre exists
+				rs = statement.executeQuery("select g_genID from genres where g_name like '"+input_genrename+"'");
+				while(rs.next())
+				{
+					g_genID = rs.getInt("g_genID");
+				}
+				if(g_genID==0)
+				{
+					System.out.println("Genre "+input_genrename+" does not exist.");
+					fail = true;
+				}
+
+				// check if artist exists
+				rs = statement.executeQuery("select ar_artID from artists where ar_name like '"+input_artistname+"'");
+				while(rs.next())
+				{
+					ar_artID = rs.getInt("ar_artID");
+				}
+				if(ar_artID==0)
+				{
+					System.out.println("Artist "+input_artistname+" does not exist.");
+					fail = true;
+				}
+
+				// check if album exists
+				rs = statement.executeQuery("select al_albID from albums where al_name like '"+input_albumname+"' and al_artID="+ar_artID+"");
+				while(rs.next())
+				{
+					al_albID = rs.getInt("al_albID");
+				}
+				if(al_albID==0)
+				{
+					System.out.println("Album "+input_albumname+" from "+input_artistname+" does not exist.");
+					fail = true;
+				}
+
+				// check if song already exists
+				rs = statement.executeQuery("select s_songID from songs where s_name like '"+input_songname+"' and s_artID="+ar_artID+" and s_albID="+al_albID+" and s_genID="+g_genID+"");
+				while(rs.next())
+				{
+					s_songID = rs.getInt("s_songID");
+				}
+				if(s_songID!=0)
+				{
+					System.out.println("Song "+input_songname+" in "+input_albumname+" from "+input_artistname+" already exists");
+					fail=true;
+				}
+				else
+				{
+					statement.executeUpdate("insert into songs (s_name,s_artID,s_albID,s_genID,s_language) values ('"+input_songname+"',"+ar_artID+","+al_albID+","+g_genID+",'"+input_language+"')");
+				}
+			}
+			catch(SQLException e)
+			{
+				System.err.println(e.getMessage());
+			}
 		if(fail == false)
 		{
-			System.out.println("User added");
+			System.out.println("Song added");
 		}
 	}
 
@@ -226,6 +265,10 @@ public class Playlist_Organizer
 		{
 			delete_user();
 		}
+		else if(selection==3)
+		{
+			add_song();
+		}
 
 		return exit_func();
 	}
@@ -267,7 +310,7 @@ public class Playlist_Organizer
 		{
 			Statement statement = connection.createStatement();
 			statement.setQueryTimeout(30);
-			ResultSet rs = statement.executeQuery("select u_userID, u_admin from users where u_username like '"+input_username+"' and u_password like '"+input_password+"'");
+			ResultSet rs = statement.executeQuery("select u_userID, u_admin from users where u_username like '"+input_username+"' and u_password='"+input_password+"'");
 			int rs_u_userID=0;
 			//verify the user
 			while(rs.next())
