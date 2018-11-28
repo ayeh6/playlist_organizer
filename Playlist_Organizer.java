@@ -205,27 +205,8 @@ public class Playlist_Organizer
 		{
 			//browse function
 		}
-
-		int exit_int=0;
-		String exit;
-		do
-		{
-			System.out.print("exit? (Y/N): ");
-			exit=input.nextLine();
-			if(exit.equals("Y") || exit.equals("y"))
-			{
-				exit_int=1;
-				return 1;
-			}
-			else if(exit.equals("N") || exit.equals("n"))
-			{
-				exit_int=1;
-				return 0;
-			}
-			System.out.println("incorrect input");
-		}while(exit_int == 0);
 		
-		return 0;
+		return exit_func();
 	}
 
 	public static int admin_interface()
@@ -246,26 +227,31 @@ public class Playlist_Organizer
 			delete_user();
 		}
 
+		return exit_func();
+	}
+
+	public static int exit_func()
+	{
+		Scanner input = new Scanner(System.in);
 		int exit_int=0;
 		String exit;
-		do
+		System.out.print("exit? (Y/N): ");
+		exit=input.nextLine();
+		if(exit.equals("Y") || exit.equals("y"))
 		{
-			System.out.print("exit? (Y/N): ");
-			exit=input.nextLine();
-			if(exit.equals("Y") || exit.equals("y"))
-			{
-				exit_int=1;
-				return 1;
-			}
-			else if(exit.equals("N") || exit.equals("n"))
-			{
-				exit_int=1;
-				return 0;
-			}
+			exit_int=1;
+			return 1;
+		}
+		else if(exit.equals("N") || exit.equals("n"))
+		{
+			exit_int=1;
+			return 0;
+		}
+		else
+		{
 			System.out.println("incorrect input");
-		}while(exit_int == 0);
-
-		return 0;
+			return exit_func();
+		}
 	}
 
 	public static void main(String[] args)
