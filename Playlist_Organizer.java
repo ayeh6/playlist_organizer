@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
-public class Lab07
+public class Playlist_Organizer
 {
 	public static Connection connection = null;
 
@@ -58,43 +58,41 @@ public class Lab07
 		input_genrename = input.nextLine();
 		
 		System.out.print("Language ");
-		input_lanuage = input.nextLine();
+		input_language = input.nextLine();
 
-		try
+		// try
+		// {
+		// 		Statement statement = connection.createStatement();
+		// 		statement.setQueryTimeout(30);
+		// 		ResultSet rs = statement.executeQuery("select u_userID from users where u_username like '"+input_username+"'");
+		// 		while(rs.next())
+		// 		{
+		// 			u_userID = rs.getInt("u_userID");
+		// 		}
+		// 		if(u_userID != 0)
+		// 		{
+		// 			System.out.println("Username Already Exists");
+		// 			fail = true;
+		// 		}
+		// 		else
+		// 		{
+		// 			statement.executeUpdate("insert into users(u_username, u_fullname, u_age, u_country, u_admin, u_password) values ("+u_username+",'"+u_fullname+"',"+u_age+","+u_country+",'"+u_admin+"',"+u_password+")");
+		// 		}
+		// 	}
+		// 	catch(SQLException e)
+		// 	{
+		// 		System.err.println(e.getMessage());
+		// 	}
+		if(fail == false)
 		{
-				Statement statement = connection.createStatement();
-				statement.setQueryTimeout(30);
-				ResultSet artistSet = statement.executeQuery("select a")
-				ResultSet rs = statement.executeQuery("select u_userID from users where u_username like '"+input_username+"' ");
-				
-				while(rs.next())
-				{
-					u_userID = rs.getInt("u_userID");
-				}
-				if(u_userID != 0)
-				{
-					System.out.println("Username Already Exists");
-					fail = true;
-				}
-				else
-				{
-					statement.executeUpdate("insert into users(u_username, u_fullname, u_age, u_country, u_admin, u_password) values ("+u_username+",'"+u_fullname+"',"+u_age+","+u_country+",'"+u_admin+"',"+u_password+")");
-				}
-			}
-			catch(SQLException e)
-			{
-				System.err.println(e.getMessage());
-			}
-			if(fail == false)
-			{
-				System.out.println("User added");
-			}
+			System.out.println("User added");
+		}
 	}
 
-	public static delete_user()
+	public static void delete_user()
 	{
 		String input_username;
-		int u_userID;
+		int u_userID=0;
 		Scanner input = new Scanner(System.in);
 
 		System.out.print("Username: ");
@@ -104,7 +102,7 @@ public class Lab07
 		{
 			Statement statement = connection.createStatement();
 			statement.setQueryTimeout(30);
-			ResultSet rs = statement.executeQuery("select u_userID from users where u_username='"+input_username+"'");
+			ResultSet rs = statement.executeQuery("select u_userID from users where u_username like '"+input_username+"'");
 			while(rs.next())
 			{
 				u_userID = rs.getInt("u_userID");
@@ -115,8 +113,12 @@ public class Lab07
 			}
 			else
 			{
-				statement.executeUpdate("delete from users where u_username='"+input_username+"'");
+				statement.executeUpdate("delete from users where u_username like '"+input_username+"'");
 			}
+		}
+		catch(SQLException e)
+		{
+			System.err.println(e.getMessage());
 		}
 	}
 	
@@ -147,15 +149,15 @@ public class Lab07
 		{
 			System.out.print("Admin Power (Y/N): ");
 			String input_admin_str = input.nextLine();	
-			if(input_admin_str == 'Y' || input_admin_str == 'y')
+			if(input_admin_str == "Y" || input_admin_str == "y")
 			{
 				input_admin = 1;
 			}
-			else if(input_admin_str == 'N' || input_admin_str == 'n')
+			else if(input_admin_str == "N" || input_admin_str == "n")
 			{
 				input_admin = 0;
 			}
-		} while(input_admin == -1)
+		} while(input_admin == -1);
 
 		try
 		{
@@ -174,7 +176,7 @@ public class Lab07
 			}
 			else
 			{
-				statement.executeUpdate("insert into users(u_username, u_fullname, u_age, u_country, u_admin, u_password) values ('"+u_username+"','"+u_fullname+"',"+u_age+",'"+u_country+"',"+u_admin+",'"+u_password+"')");
+				statement.executeUpdate("insert into users(u_username, u_fullname, u_age, u_country, u_admin, u_password) values ('"+input_username+"','"+input_fullname+"',"+input_age+",'"+input_country+"',"+input_admin+",'"+input_password+"')");
 			}
 		}
 		catch(SQLException e)
@@ -190,16 +192,17 @@ public class Lab07
 	public static void main(String[] args)
 	{
 		Scanner input = new Scanner(System.in);
-		int exit=0;
+		int exit=0,rs_u_admin=0;
 		connect_to_database();
 		System.out.print("username: ");
-		String username=input.nextLine();
+		String input_username=input.nextLine();
 		System.out.print("password");
-		String password=input.nextLine();
+		String input_password=input.nextLine();
 		try
 		{
-			statement = connection.createStatement();
-			ResultSet rs = statement.executeQuery("select u_userID, u_admin from users where u_username='"+username+"' and password='"+password"'");
+			Statement statement = connection.createStatement();
+			statement.setQueryTimeout(30);
+			ResultSet rs = statement.executeQuery("select u_userID, u_admin from users where u_username like '"+input_username+"' and password like '"+input_password+"'");
 			int rs_u_userID=0;
 			//verify the user
 			while(rs.next())
@@ -207,7 +210,7 @@ public class Lab07
 				rs_u_userID=rs.getInt("u_userID");
 				rs_u_admin=rs.getInt("u_admin");
 			}
-			if(rs_userID==0)
+			if(rs_u_userID==0)
 			{
 				System.out.println("Invalid username or password");
 				exit=1;
@@ -218,7 +221,7 @@ public class Lab07
 				{
 					System.out.println("Log in as Administrator? (Y/N)");
 					String admin_login=input.nextLine();
-					if(admin_login=='Y' || admin_login=='y')
+					if(admin_login == "Y" || admin_login == "y")
 					{
 						//log in as admin
 					}
