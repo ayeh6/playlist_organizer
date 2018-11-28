@@ -149,11 +149,11 @@ public class Playlist_Organizer
 		{
 			System.out.print("Admin Power (Y/N): ");
 			String input_admin_str = input.nextLine();	
-			if(input_admin_str == "Y" || input_admin_str == "y")
+			if(input_admin_str.equals("Y") || input_admin_str.equals("y"))
 			{
 				input_admin = 1;
 			}
-			else if(input_admin_str == "N" || input_admin_str == "n")
+			else if(input_admin_str.equals("N") || input_admin_str.equals("n"))
 			{
 				input_admin = 0;
 			}
@@ -189,20 +189,99 @@ public class Playlist_Organizer
 		}
 	}
 	
+	public static int user_interface()
+	{
+		Scanner input = new Scanner(System.in);
+		int selection=0;
+		System.out.println("Select an option:");
+		System.out.println("1 create playlist");
+		System.out.println("2 browse");
+		selection=input.nextInt();
+		if(selection==1)
+		{
+			//create playlist function
+		}
+		else
+		{
+			//browse function
+		}
+
+		int exit_int=0;
+		String exit;
+		do
+		{
+			System.out.print("exit? (Y/N): ");
+			exit=input.nextLine();
+			if(exit.equals("Y") || exit.equals("y"))
+			{
+				exit_int=1;
+				return 1;
+			}
+			else if(exit.equals("N") || exit.equals("n"))
+			{
+				exit_int=1;
+				return 0;
+			}
+			System.out.println("incorrect input");
+		}while(exit_int == 0);
+		
+		return 0;
+	}
+
+	public static int admin_interface()
+	{
+		Scanner input = new Scanner(System.in);
+		int selection=0;
+		System.out.println("Select an option:");
+		System.out.println("1 add user");
+		System.out.println("2 delete user");
+		System.out.println("3 add/delete from library");
+		selection=input.nextInt();
+		if(selection==1)
+		{
+			add_user();
+		}
+		else if(selection==2)
+		{
+			delete_user();
+		}
+
+		int exit_int=0;
+		String exit;
+		do
+		{
+			System.out.print("exit? (Y/N): ");
+			exit=input.nextLine();
+			if(exit.equals("Y") || exit.equals("y"))
+			{
+				exit_int=1;
+				return 1;
+			}
+			else if(exit.equals("N") || exit.equals("n"))
+			{
+				exit_int=1;
+				return 0;
+			}
+			System.out.println("incorrect input");
+		}while(exit_int == 0);
+
+		return 0;
+	}
+
 	public static void main(String[] args)
 	{
 		Scanner input = new Scanner(System.in);
-		int exit=0,rs_u_admin=0;
+		int exit=0,rs_u_admin=0,admin_selection=0;
 		connect_to_database();
 		System.out.print("username: ");
 		String input_username=input.nextLine();
-		System.out.print("password");
+		System.out.print("password: ");
 		String input_password=input.nextLine();
 		try
 		{
 			Statement statement = connection.createStatement();
 			statement.setQueryTimeout(30);
-			ResultSet rs = statement.executeQuery("select u_userID, u_admin from users where u_username like '"+input_username+"' and password like '"+input_password+"'");
+			ResultSet rs = statement.executeQuery("select u_userID, u_admin from users where u_username like '"+input_username+"' and u_password like '"+input_password+"'");
 			int rs_u_userID=0;
 			//verify the user
 			while(rs.next())
@@ -219,16 +298,23 @@ public class Playlist_Organizer
 			{
 				if(rs_u_admin==1)
 				{
-					System.out.println("Log in as Administrator? (Y/N)");
+					System.out.print("Log in as Administrator? (Y/N): ");
 					String admin_login=input.nextLine();
-					if(admin_login == "Y" || admin_login == "y")
+					System.out.println(admin_login);
+					if(admin_login.equals("Y") || admin_login.equals("y"))
 					{
 						//log in as admin
+						admin_selection=1;
 					}
-					else
+					else if(admin_login == "N" || admin_login == "n")
 					{
 						//log in as user
+						admin_selection=0;
 					}
+				}
+				else
+				{
+					admin_selection=0;
 				}
 			}
 		}
@@ -236,9 +322,17 @@ public class Playlist_Organizer
 		{
 			System.err.println(e.getMessage());
 		}
+		//interfaces
 		while(exit==0)
 		{
-
+			if(admin_selection==1)
+			{
+				exit = admin_interface();
+			}
+			else if(admin_selection==0)
+			{
+				exit = user_interface();
+			}
 		}
 		//closing the connection
 		disconnect_from_database();
