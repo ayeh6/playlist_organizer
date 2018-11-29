@@ -228,6 +228,178 @@ public class Playlist_Organizer
 		}
 	}
 	
+	public static void add_genre()
+	{	
+		boolean fail = false;
+		String input_genrename;
+		int g_genID = 0;
+		Scanner input = new Scanner(System.in);
+		
+		System.out.println("Enter a new genre: ");
+		input_genrename = input.nextLine();
+
+		try
+		{
+			Statement statement = connection.createStatement();
+			statement.setQueryTimeout(30);
+			ResultSet rs = statement.executeQuery("SELECT g_genID FROM genres WHERE g_name LIKE '"+input_genrename+"' ");
+			
+			while(rs.next())
+			{
+				g_genID = rs.getInt("g_genID");
+			}
+			if(g_genID != 0)
+			{
+				System.out.println("Genre Already Exists");
+				fail = true;
+			}
+			else
+			{
+				statement.executeUpdate("insert into genres(g_name) values ('"+input_genrename+"')");
+			}
+		}
+		catch(SQLException e)
+		{
+			System.err.println(e.getMessage());
+		}
+		if(fail == false)
+		{
+			System.out.println("Genre added");
+		}
+	}
+	
+	public static void add_album()
+	{	
+		boolean fail = false;
+		String input_albumname, input_artistname, input_genrename;
+		int al_albID = 0, ar_artID = 0, g_genID = 0;
+		Scanner input = new Scanner(System.in);
+
+		System.out.print("Album: ");
+		input_albumname = input.nextLine();
+
+		System.out.print("Artist: ");
+		input_artistname = input.nextLine();	
+
+		System.out.print("Genre: ");
+		input_genrename = input.nextLine();
+
+		try
+		{
+				Statement statement = connection.createStatement();
+				statement.setQueryTimeout(30);
+				ResultSet rs;
+
+				// check if genre exists
+				rs = statement.executeQuery("select g_genID from genres where g_name like '"+input_genrename+"'");
+				while(rs.next())
+				{
+					g_genID = rs.getInt("g_genID");
+				}
+				if(g_genID == 0)
+				{
+					System.out.println("Genre "+input_genrename+" does not exist.");
+					fail = true;
+				}
+
+				// check if artist exists
+				rs = statement.executeQuery("select ar_artID from artists where ar_name like '"+input_artistname+"'");
+				while(rs.next())
+				{
+					ar_artID = rs.getInt("ar_artID");
+				}
+				if(ar_artID == 0)
+				{
+					System.out.println("Artist "+input_artistname+" does not exist.");
+					fail = true;
+				}
+
+
+				// check if album already exists
+				rs = statement.executeQuery("select al_albID from albums where al_name like '"+input_albumname+"' and al_artID="+ar_artID+"");
+				while(rs.next())
+				{
+					al_albID = rs.getInt("al_albID");
+				}
+				if(al_albID != 0)
+				{
+					System.out.println("Album "+input_albumname+" by "+input_artistname+" in genre "+input_genrename+" already exists");
+					fail = true;
+				}
+				else
+				{
+					statement.executeUpdate("insert into albums (al_name, al_artID, al_genID) values ('"+input_albumname+"',"+ar_artID+","+g_genID+")");
+				}
+			}
+			catch(SQLException e)
+			{
+				System.err.println(e.getMessage());
+			}
+		if(fail == false)
+		{
+			System.out.println("Album added");
+		}
+	}
+	
+	public static void add_artist()
+	{	
+		boolean fail = false;
+		String input_artistname, input_genrename;
+		int ar_artID = 0, g_genID = 0;
+		Scanner input = new Scanner(System.in);
+		
+		System.out.println("Enter a new artist: ");
+		input_artistname = input.nextLine();
+		
+		System.out.println("Enter artist genre: ");
+		input_genrename = input.nextLine();
+
+		try
+		{
+			Statement statement = connection.createStatement();
+			statement.setQueryTimeout(30);
+			ResultSet rs;
+
+			// check if genre exists
+			rs = statement.executeQuery("select g_genID from genres where g_name like '"+input_genrename+"'");
+			while(rs.next())
+			{
+				g_genID = rs.getInt("g_genID");
+			}
+			if(g_genID == 0)
+			{
+				System.out.println("Genre "+input_genrename+" does not exist.");
+				fail = true;
+			}		
+			
+			// check if artist exists
+			rs = statement.executeQuery("select ar_artID from artists where ar_name like '"+input_artistname+"'");			
+			while(rs.next())
+			{
+				ar_artID = rs.getInt("ar_artID");
+			}
+			if(ar_artID != 0)
+			{
+				System.out.println("Artist Already Exists");
+				fail = true;
+			}
+			else
+			{
+				statement.executeUpdate("insert into artists(ar_name, ar_genID) values ('"+input_artistname+"',"+g_genID+")");
+			}
+		}
+		catch(SQLException e)
+		{
+			System.err.println(e.getMessage());
+		}
+		if(fail == false)
+		{
+			System.out.println("Artist added");
+		}
+	}
+	
+	
+	
 	public static int user_interface()
 	{
 		Scanner input = new Scanner(System.in);
