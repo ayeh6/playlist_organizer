@@ -9,6 +9,8 @@ public class Playlist_Organizer
 {
 	public static Connection connection = null;
 
+	public static String current_user;
+
 	public static void connect_to_database()
 	{
 		try
@@ -45,18 +47,15 @@ public class Playlist_Organizer
 		int s_songID=0,ar_artID=0,al_albID=0,g_genID=0;
 		Scanner input = new Scanner(System.in);
 
-		System.out.print("Song: ");
+		System.out.println("Enter details of new song")
+		System.out.print("Song name: ");
 		input_songname = input.nextLine();
-
-		System.out.print("Artist: ");
+		System.out.print("Artist name: ");
 		input_artistname = input.nextLine();	
-
-		System.out.print("Album: ");
+		System.out.print("Album name: ");
 		input_albumname = input.nextLine();
-
 		System.out.print("Genre: ");
 		input_genrename = input.nextLine();
-		
 		System.out.print("Language ");
 		input_language = input.nextLine();
 
@@ -128,6 +127,50 @@ public class Playlist_Organizer
 		}
 	}
 
+	public static void delete_song()
+	{
+		String input_songname;
+		int s_songID=0,s_artID=0,s_albID=0;
+		Scanner input = new Scanner(System.in);
+
+		System.out.print("Song to delete: ");
+		input_songname = input.nextLine();
+
+		try
+		{
+			Statement statement = connection.createStatement();
+			statement.setQueryTimeout(30);
+			ResultSet rs = statement.executeQuery("select s_songID,s_name,al_name,ar_name from songs,artists,albums where s_artID=ar_artID and s_albID=al_albID and s_name like '"+input_songname+"'");
+			if(!rs.isBeforeFirst())
+			{
+				System.out.println("Song does not exist");
+			}
+			else
+			{
+				while(rs.next())
+				{
+					System.out.println(rs.getInt("s_songID")+"|"+rs.getString("s_name")+"|"+rs.getString("al_name")+"|"+rs.getString("ar_name"));
+				}
+				System.out.print("Enter songID of song to delete: ");
+				s_songID = input.nextInt();
+				rs = statement.executeQuery("select * from songs where s_songID="+s_songID+" and s_name like '"+input_songname+"'");
+				if(!rs.isBeforeFirst())
+				{
+					System.out.println("Invalid songID");
+				}
+				else
+				{
+					statement.executeUpdate("delete from songs where s_songID="+s_songID+" and s_name like '"+input_songname+"'");
+				}
+
+			}
+		}
+		catch(SQLException e)
+		{
+			System.err.println(e.getMessage());
+		}
+	}
+
 	public static void delete_user()
 	{
 		String input_username;
@@ -150,7 +193,7 @@ public class Playlist_Organizer
 			{
 				System.out.println("User does not exist");
 			}
-			else
+			else if(admin_authenticate())
 			{
 				statement.executeUpdate("delete from users where u_username like '"+input_username+"'");
 			}
@@ -171,16 +214,12 @@ public class Playlist_Organizer
 		System.out.println("Enter details of new user");
 		System.out.print("Username: ");
 		input_username = input.nextLine();
-
 		System.out.print("Password: ");
 		input_password = input.nextLine();		
-
 		System.out.print("Fullname: ");
 		input_fullname = input.nextLine();
-
 		System.out.print("Age: ");
 		input_age = input.nextLine();
-
 		System.out.print("Country: ");
 		input_country = input.nextLine();
 
@@ -227,7 +266,7 @@ public class Playlist_Organizer
 			System.out.println("User added");
 		}
 	}
-	
+
 	public static void add_genre()
 	{	
 		boolean fail = false;
@@ -235,7 +274,7 @@ public class Playlist_Organizer
 		int g_genID = 0;
 		Scanner input = new Scanner(System.in);
 		
-		System.out.println("Enter a new genre: ");
+		System.out.print("Enter new genre name: ");
 		input_genrename = input.nextLine();
 
 		try
@@ -274,13 +313,11 @@ public class Playlist_Organizer
 		String input_albumname, input_artistname, input_genrename;
 		int al_albID = 0, ar_artID = 0, g_genID = 0;
 		Scanner input = new Scanner(System.in);
-
-		System.out.print("Album: ");
+		System.out.println("Enter details of new album");
+		System.out.print("Album name: ");
 		input_albumname = input.nextLine();
-
-		System.out.print("Artist: ");
+		System.out.print("Artist name: ");
 		input_artistname = input.nextLine();	
-
 		System.out.print("Genre: ");
 		input_genrename = input.nextLine();
 
@@ -314,7 +351,6 @@ public class Playlist_Organizer
 					fail = true;
 				}
 
-
 				// check if album already exists
 				rs = statement.executeQuery("select al_albID from albums where al_name like '"+input_albumname+"' and al_artID="+ar_artID+"");
 				while(rs.next())
@@ -347,11 +383,10 @@ public class Playlist_Organizer
 		String input_artistname, input_genrename;
 		int ar_artID = 0, g_genID = 0;
 		Scanner input = new Scanner(System.in);
-		
-		System.out.println("Enter a new artist: ");
+		System.out.println("Enter details of new artist");
+		System.out.print("Artist name: ");
 		input_artistname = input.nextLine();
-		
-		System.out.println("Enter artist genre: ");
+		System.out.print("Genre: ");
 		input_genrename = input.nextLine();
 
 		try
@@ -398,8 +433,29 @@ public class Playlist_Organizer
 		}
 	}
 	
-	
-	
+	public static boolean admin_authenticate()
+	{
+		Scanner input = new Scanner(System.in);
+		String input_password;
+		System.out.print("enter password: ");
+		input_password = input.nextLine();
+		try
+		{
+			Statement statement = connection.createStatement();
+			statement.setQueryTimeout(30);
+			ResultSet rs = statement.executeQuery("select u_userID from users where u_username like '"+current_user+"' and u_password='"+input_password+"'");
+			if(!rs.isBeforeFirst())
+			{
+				System.out.println("invalid password");
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+	}
+
 	public static int user_interface()
 	{
 		Scanner input = new Scanner(System.in);
@@ -424,24 +480,43 @@ public class Playlist_Organizer
 	{
 		Scanner input = new Scanner(System.in);
 		int selection=0;
-		System.out.println("Select an option:");
+		System.out.println("ADMINISTRATOR MENU");
 		System.out.println("1 add user");
 		System.out.println("2 delete user");
-		System.out.println("3 add/delete from library");
+		System.out.println("3 add song");
+		System.out.println("4 add album");
+		System.out.println("5 add artist");
+		System.out.println("6 add genre");
+		System.out.println("7 delete song");
+		System.out.println("8 delete album");
+		System.out.println("9 delete artist");
+		System.out.println("10 delete genre");
+		System.out.print("Select an option: ");
 		selection=input.nextInt();
-		if(selection==1)
+		System.out.println();
+		switch(selection)
 		{
-			add_user();
+			case 1:
+				add_user();
+			case 2:
+				delete_user();
+			case 3:
+				add_song();
+			case 4:
+				add_album();
+			case 5:
+				add_artist();
+			case 6:
+				add_genre();
+			case 7:
+				delete_song();
+			case 8:
+				//delete_album();
+			case 9:
+				//delete_artist();
+			case 10:
+				//delete_genre();
 		}
-		else if(selection==2)
-		{
-			delete_user();
-		}
-		else if(selection==3)
-		{
-			add_song();
-		}
-
 		return exit_func();
 	}
 
@@ -452,6 +527,7 @@ public class Playlist_Organizer
 		String exit;
 		System.out.print("exit? (Y/N): ");
 		exit=input.nextLine();
+		System.out.println();
 		if(exit.equals("Y") || exit.equals("y"))
 		{
 			exit_int=1;
@@ -497,11 +573,12 @@ public class Playlist_Organizer
 			}
 			else
 			{
+				current_user=input_username;
 				if(rs_u_admin==1)
 				{
 					System.out.print("Log in as Administrator? (Y/N): ");
 					String admin_login=input.nextLine();
-					System.out.println(admin_login);
+					System.out.println();
 					if(admin_login.equals("Y") || admin_login.equals("y"))
 					{
 						//log in as admin
