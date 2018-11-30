@@ -664,6 +664,77 @@ public class Playlist_Organizer
 		}
 	}
 
+	public static void adds()
+	{
+		boolean fail = false;
+		String input_playlistname, input_songname, input_artistname;
+		int p_playlistID = 0, s_songID = 0, ar_artID = 0;
+        Scanner input = new Scanner(System.in);
+        
+
+		System.out.print("Playlist name: ");
+		input_playlistame = input.nextLine();
+		System.out.print("Song name: ");
+		input_songname = input.nextLine();
+		System.out.print("Artist name: ");
+		input_artistname = input.nextLine();
+
+
+		try
+		{
+			Statement statement = connection.createStatement();
+			statement.setQueryTimeout(30);
+			ResultSet rs;
+
+			// check if playlist exists
+			rs = statement.executeQuery("SELECT p_playlistID FROM playlists WHERE p_name LIKE '"+input_playlistname+"'");
+			while(rs.next())
+			{
+				p_playlistID = rs.getInt("p_playlistID");
+			}
+			if(p_playlistID == 0)
+			{
+				System.out.println("Playlist "+input_playlistname+" does not exist.");
+				fail = true;
+			}
+
+			// check if artist exists
+			rs = statement.executeQuery("SELECT ar_artID FROM artists WHERE ar_name LIKE '"+input_artistname+"'");
+			while(rs.next())
+			{
+				ar_artID = rs.getInt("ar_artID");
+			}
+			if(ar_artID == 0)
+			{
+				System.out.println("Artist "+input_artistname+" does not exist.");
+				fail = true;
+			}
+
+			// check if song already exists, if so add to playlist
+			rs = statement.executeQuery("SELECT s_songID FROM songs WHERE s_name LIKE '"+input_songname+"' AND s_artID = "+ar_artID+"");
+			while(rs.next())
+			{
+				s_songID = rs.getInt("s_songID");
+			}
+			if(s_songID == 0)
+			{
+				System.out.println("Song "+input_songname+" by "+input_artistname+" does not exist.");
+				fail = true;
+			}
+			else
+			{
+				statement.executeUpdate("INSERT INTO adds(ad_playlistID, ad_songID) values ('"+p_playlistID+"',"+s_songID+")");
+			}
+		}
+		catch(SQLException e)
+		{
+			System.err.println(e.getMessage());
+		}
+		if(fail == false)
+		{
+			System.out.println("Song added to playlist");
+		}
+	}
 
 	public static int user_interface()
 	{
