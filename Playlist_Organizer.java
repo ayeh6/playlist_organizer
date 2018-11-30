@@ -623,22 +623,47 @@ public class Playlist_Organizer
 	}
 
 	public static void create_playlist()
-	{
+	{	
+		boolean fail = false;
+		String input_playlistname;
+		int p_playlistID;
 		Scanner input = new Scanner(System.in);
-		String playlist_name;
-		System.out.print("Enter name of new playlist: ");
-		playlist_name = input.nextLine();
+
+		System.out.print("Enter name for new playlist: ");
+		input_playlistname = input.nextLine();
+
 		try
 		{
-			Statement statement = connection.createStatement();
-			statement.setQueryTimeout(30);
-			statement.executeUpdate("insert into playlists(p_name,p_userID) values ('"+playlist_name+"',"+current_userID+")");
-		}
-		catch(SQLException e)
+				Statement statement = connection.createStatement();
+				statement.setQueryTimeout(30);
+				ResultSet rs;
+
+				// check if playlist exists
+				rs = statement.executeQuery("SELECT p_playlistID FROM playlists WHERE p_name LIKE '"+input_playlistname+"'");
+				while(rs.next())
+				{
+					p_playlistID = rs.getInt("p_playlistID");
+				}
+				if(p_playlistID != 0)
+				{
+					System.out.println("Playlist "+input_playlistname+" already exists.");
+					fail = true;
+                }
+                else
+				{
+					statement.executeUpdate("INSERT INTO playlists (p_name, p_userID) VALUES ('"+input_playlistname+"',"+current_userID+")");
+				}
+			}
+			catch(SQLException e)
+			{
+				System.err.println(e.getMessage());
+			}
+		if(fail == false)
 		{
-			System.err.println(e.getMessage());
+			System.out.println("Playlist created");
 		}
 	}
+
 
 	public static int user_interface()
 	{
