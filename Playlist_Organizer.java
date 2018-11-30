@@ -10,7 +10,8 @@ public class Playlist_Organizer
 {
 	public static Connection connection = null;
 
-	public static String current_user;
+	public static String current_username;
+	public static int current_userID;
 
 	public static void connect_to_database()
 	{
@@ -18,7 +19,7 @@ public class Playlist_Organizer
 		{
 			connection = DriverManager.getConnection("jdbc:sqlite:playlist_organizer.db");
 			Statement statement = connection.createStatement();
-			statement.setQueryTimeout(30);
+			statement.execute("PRAGMA foreign_keys = ON");
 		}
 		catch(SQLException e)
 		{
@@ -334,7 +335,7 @@ public class Playlist_Organizer
 			Statement statement = connection.createStatement();
 			statement.setQueryTimeout(30);
 			ResultSet rs = statement.executeQuery("select u_userID, u_username, u_fullname from users where u_username like '%"+input_username+"%'");
-			if(rs.isBeforeFirst())
+			if(!rs.isBeforeFirst())
 			{
 				System.out.println("No search results");
 			}
@@ -347,12 +348,13 @@ public class Playlist_Organizer
 				System.out.print("Enter ID number of user to delete: ");
 				u_userID = input.nextInt();
 				rs = statement.executeQuery("select * from users where u_userID="+u_userID+" and u_username like '%"+input_username+"%'");
-				if(rs.isBeforeFirst())
+				if(!rs.isBeforeFirst())
 				{
 					System.out.println("Invalid ID number");
 				}
 				else if(admin_authenticate())
 				{
+					statement.setQueryTimeout(30);
 					statement.executeUpdate("delete from users where u_userID="+u_userID);
 				}
 			}
@@ -602,7 +604,7 @@ public class Playlist_Organizer
 		{
 			Statement statement = connection.createStatement();
 			statement.setQueryTimeout(30);
-			ResultSet rs = statement.executeQuery("select u_userID from users where u_username like '"+current_user+"' and u_password='"+input_password+"'");
+			ResultSet rs = statement.executeQuery("select u_userID from users where u_username like '"+current_username+"' and u_password='"+input_password+"'");
 			if(!rs.isBeforeFirst())
 			{
 				System.out.println("invalid password");
@@ -620,23 +622,42 @@ public class Playlist_Organizer
 		return false;
 	}
 
+	public static void create_playlist()
+	{
+		Scanner input = new Scanner(System.in);
+		String playlist_name;
+		System.out.print("Enter name of new playlist: ");
+		playlist_name = input.nextLine();
+		try
+		{
+			Statement statement = connection.createStatement();
+			statement.setQueryTimeout(30);
+			statement.executeUpdate("insert into playlists(p_name,p_userID) values ('"+playlist_name+"',"+current_userID+")");
+		}
+		catch(SQLException e)
+		{
+			System.err.println(e.getMessage());
+		}
+	}
+
 	public static int user_interface()
 	{
 		Scanner input = new Scanner(System.in);
 		int selection=0;
-		System.out.println("Select an option:");
-		System.out.println("1 create playlist");
-		System.out.println("2 browse");
+		System.out.println("Main Menu");
+		System.out.println("1 - Create a Playlist");
+		System.out.println("2 - Browse");
 		selection=input.nextInt();
 		if(selection==1)
 		{
-			//create playlist function
+			create_playlist();
 		}
 		else
 		{
 			//browse function
+			System.out.println("\nSelect category to search");
+			System.out.println("1 - Songs");
 		}
-
 		return exit_func();
 	}
 
@@ -645,17 +666,17 @@ public class Playlist_Organizer
 		Scanner input = new Scanner(System.in);
 		int selection=0;
 		System.out.println("ADMINISTRATOR MENU");
-		System.out.println("1 add user");
-		System.out.println("2 delete user");
-		System.out.println("3 add song");
-		System.out.println("4 add album");
-		System.out.println("5 add artist");
-		System.out.println("6 add genre");
-		System.out.println("7 delete song");
-		System.out.println("8 delete album");
-		System.out.println("9 delete artist");
-		System.out.println("10 delete genre");
-		System.out.println("0 exit");
+		System.out.println("1 - add user");
+		System.out.println("2 - delete user");
+		System.out.println("3 - add song");
+		System.out.println("4 - add album");
+		System.out.println("5 - add artist");
+		System.out.println("6 - add genre");
+		System.out.println("7 - delete song");
+		System.out.println("8 - delete album");
+		System.out.println("9 - delete artist");
+		System.out.println("10 - delete genre");
+		System.out.println("0 - exit");
 		System.out.print("Select an option: ");
 		selection=input.nextInt();
 		System.out.println();
@@ -738,19 +759,20 @@ public class Playlist_Organizer
 			ResultSet rs = statement.executeQuery("select u_userID, u_admin from users where u_username like '"+input_username+"' and u_password='"+input_password+"'");
 			int rs_u_userID=0;
 			//verify the user
-			while(rs.next())
-			{
-				rs_u_userID=rs.getInt("u_userID");
-				rs_u_admin=rs.getInt("u_admin");
-			}
-			if(rs_u_userID==0)
+			if(!rs.isBeforeFirst())
 			{
 				System.out.println("Invalid username or password");
 				exit=1;
 			}
 			else
 			{
-				current_user=input_username;
+				while(rs.next())
+				{
+					rs_u_userID=rs.getInt("u_userID");
+					rs_u_admin=rs.getInt("u_admin");
+				}
+				current_userID=rs_u_userID;
+				current_username=input_username;
 				if(rs_u_admin==1)
 				{
 					System.out.print("Log in as Administrator? (Y/N): ");
@@ -790,6 +812,7 @@ public class Playlist_Organizer
 			}
 		}
 		//closing the connection
+		System.out.println("Logging out...");
 		disconnect_from_database();
 	}
 }
