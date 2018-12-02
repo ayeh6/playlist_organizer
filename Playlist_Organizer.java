@@ -740,7 +740,7 @@ public class Playlist_Organizer
 	{
 		Scanner input = new Scanner(System.in);
 		int selection = 0;
-		int browse = 9;
+		int browse = 0;
 		System.out.println("Main Menu");
 		System.out.println("1 - Create a Playlist");
 		System.out.println("2 - Browse");
