@@ -739,11 +739,12 @@ public class Playlist_Organizer
 	public static int user_interface()
 	{
 		Scanner input = new Scanner(System.in);
-		int selection=0;
+		int selection = 0;
+		int browse = 9;
 		System.out.println("Main Menu");
 		System.out.println("1 - Create a Playlist");
 		System.out.println("2 - Browse");
-		selection=input.nextInt();
+		selection = input.nextInt();
 		if(selection==1)
 		{
 			create_playlist();
@@ -752,7 +753,47 @@ public class Playlist_Organizer
 		{
 			//browse function
 			System.out.println("\nSelect category to search");
-			System.out.println("1 - Songs");
+			System.out.println("1 - Song");
+			System.out.println("2 - Artist");
+			System.out.println("3 - Album");
+			System.out.println("4 - Genre");
+			System.out.println("5 - Playlist");
+			System.out.println("0 - Exit");
+			
+			browse = input.nextInt();
+			if (browse == 1){
+                System.out.println("Enter song name: ");
+                input_songname = input.nextLine();
+                //Print out song and artist names
+                System.out.println("SELECT s_name, ar_name FROM songs, artists WHERE s_artID = ar_artID AND s_name like '"+input_songname+"%'");   	
+			}
+			if (browse == 2){
+                System.out.println("Enter artist name: ");
+                input_artistname = input.nextLine();
+                //Print out artist names
+                System.out.println("SELECT ar_name FROM artists WHERE ar_name like '"+input_artistname+"%'");   	
+            }
+			if (browse == 3){
+                System.out.println("Enter album name: ");
+                input_albumname = input.nextLine();
+                //Print out album and artist names
+                System.out.println("SELECT al_name, ar_name FROM albums, artists WHERE al_artID = ar_artID AND al_name like '"+input_albumname+"%'");   
+            }
+			if (browse == 4){
+                System.out.println("Enter genre name: ");
+                input_genrename = input.nextLine();
+                //Print out genre names
+                System.out.println("SELECT g_name FROM genres WHERE g_name like '"+input_genrename+"%'");   
+            }
+			if (browse == 5){
+                System.out.println("Enter playlist name: ");
+                input_playlistname = input.nextLine();
+                //Print out playlist names
+                System.out.println("SELECT p_name FROM playlists WHERE p_name like '"+input_playlistname+"%'");   
+            }
+            if (browse == 0){
+                return 1;
+            }
 		}
 		return exit_func();
 	}
